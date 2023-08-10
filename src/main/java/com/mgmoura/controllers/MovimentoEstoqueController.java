@@ -1,6 +1,7 @@
 package com.mgmoura.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +18,10 @@ public class MovimentoEstoqueController {
 		
 	}
 	
-	@GetMapping("{data}")
-	public void movimentoGetAll() {
+	@GetMapping("{dataInicio}/{dataFim}")
+	public void getAll(
+			@PathVariable("dataInicio") String dataInicio, 
+			@PathVariable("dataFim") String dataFim) {
 		
 	}
 
