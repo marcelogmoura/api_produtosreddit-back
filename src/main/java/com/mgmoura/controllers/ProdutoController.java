@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mgmoura.dtos.ProdutoPostRequestDto;
 import com.mgmoura.dtos.ProdutoPutRequestDto;
+import com.mgmoura.dtos.ProdutoResponseDto;
 import com.mgmoura.entities.Produto;
 import com.mgmoura.repositories.ProdutoRepository;
 
@@ -28,7 +30,9 @@ public class ProdutoController {
 	private ProdutoRepository produtoRepository;
 	
 	@PostMapping("/post")
-	public ResponseEntity<String> produtoPost(@RequestBody ProdutoPostRequestDto dto) {
+	public ResponseEntity<ProdutoResponseDto> produtoPost(@RequestBody ProdutoPostRequestDto dto) {
+		
+		ProdutoResponseDto response = new ProdutoResponseDto();
 		
 		try {
 			
@@ -40,23 +44,32 @@ public class ProdutoController {
 			
 			produtoRepository.save(produto);
 			
-			return ResponseEntity.status(201).body("cadastrado ok");
-			
+			response.setStatus(HttpStatus.CREATED);
+			response.setMensagem("Produto cadastrado com sucesso");
+			response.setProduto(produto);
 			
 		}catch (Exception e) {
-			return ResponseEntity.status(500).body("erro" +e.getMessage());
+			
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+			response.setMensagem(e.getMessage());
 		}
+		
+		return ResponseEntity.status(response.getStatus().value()).body(response);
 		
 	}
 	
 	@PutMapping("/put")
-	public ResponseEntity<String> produtoPut(@RequestBody ProdutoPutRequestDto dto) {
+	public ResponseEntity<ProdutoResponseDto> produtoPut(@RequestBody ProdutoPutRequestDto dto) {
+		
+		ProdutoResponseDto response = new ProdutoResponseDto();
 		
 		try {
 			Optional<Produto> produto = produtoRepository.findById(dto.getIdProduto());
 			
 			if(produto.isEmpty()) {
-				return ResponseEntity.status(400).body("nao encontrado");
+
+				response.setStatus(HttpStatus.BAD_REQUEST);
+				response.setMensagem("Produto não localizado");
 				
 			}else {
 				Produto produtoPut = produto.get();
@@ -67,13 +80,20 @@ public class ProdutoController {
 				
 				produtoRepository.save(produtoPut);
 				
-				return ResponseEntity.status(200).body("atualizado");
+				response.setMensagem("Produto atualizado com sucesso");
+				response.setStatus(HttpStatus.OK);
+				response.setProduto(produtoPut);
 							
 			}
 			
 		}catch (Exception e) {
-			return ResponseEntity.status(500).body("falha" + e.getMessage());
+			
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR); 
+			response.setMensagem(e.getMessage());
 		}
+		
+		return ResponseEntity.status(response.getStatus().value()).body(response);
+
 		
 	}
 	
@@ -118,26 +138,34 @@ public class ProdutoController {
 	
 	
 	@DeleteMapping("{idProduto}")
-	public ResponseEntity<String> delete(@PathVariable("idProduto") Integer idProduto) {
+	public ResponseEntity<ProdutoResponseDto> delete(@PathVariable("idProduto") Integer idProduto) {
+		
+		ProdutoResponseDto response = new ProdutoResponseDto();
+		
 		try {
 			Optional<Produto> produto = produtoRepository.findById(idProduto);
 			
 			if(produto.isEmpty()) {
-				return ResponseEntity.status(400).body("nao localizado");
-
+				
+				response.setStatus(HttpStatus.BAD_REQUEST);
+				response.setMensagem("Produto não localizado");
 				
 			}else {
 				produtoRepository.delete(produto.get());
-				return ResponseEntity.status(200).body("excluido");
+
+				response.setStatus(HttpStatus.OK);
+				response.setMensagem("Produto deletado com sucesso");
+				response.setProduto(produto.get());
 				
 			}
 			
 		}catch (Exception e) {
-			return ResponseEntity.status(500).body("falha" + e.getMessage());
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR); 
+			response.setMensagem(e.getMessage());
 
 		}
-		
+		return ResponseEntity.status(response.getStatus().value()).body(response);
 	}
-
-
 }
+
+
