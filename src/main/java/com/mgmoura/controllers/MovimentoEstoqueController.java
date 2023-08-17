@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mgmoura.dtos.MovimentoPostRequestDto;
+import com.mgmoura.dtos.MovimentoResponseDto;
 import com.mgmoura.entities.MovimentoEstoque;
 import com.mgmoura.entities.Produto;
 import com.mgmoura.repositories.MovimentoRepository;
@@ -30,13 +32,17 @@ public class MovimentoEstoqueController {
 
 	
 	@PostMapping("/post")
-	public ResponseEntity<String> movimentoPost(@RequestBody MovimentoPostRequestDto dto) {
+	public ResponseEntity<MovimentoResponseDto> movimentoPost(@RequestBody MovimentoPostRequestDto dto) {
+		
+		MovimentoResponseDto response = new MovimentoResponseDto();
 		
 		try {
 			Optional<Produto> produto = produtoRepository.findById(dto.getIdProduto());
 			
 			if(produto.isEmpty()) {
-				return ResponseEntity.status(400).body("Produto não localizado");
+				
+				response.setStatus(HttpStatus.BAD_REQUEST);
+				response.setMensagem("Produto não localizado");
 				
 			}else {
 				MovimentoEstoque movimentoEstoque = new MovimentoEstoque();
@@ -48,12 +54,17 @@ public class MovimentoEstoqueController {
 				
 				movimentoRepository.save(movimentoEstoque);
 				
-				return ResponseEntity.status(201).body("Movimentação cadastrada");
+				response.setStatus(HttpStatus.CREATED);
+				response.setMensagem("Movimentação cadastrada com sucesso");
+				
 			}
 			
 		}catch (Exception e) {
-			return ResponseEntity.status(500).body("Falha ao cadastrar" + e.getMessage());
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+			response.setMensagem(e.getMessage());
 		}
+		
+		return ResponseEntity.status(response.getStatus().value()).body(response);
 	}
 	
 	@GetMapping("{dataInicio}/{dataFim}")
