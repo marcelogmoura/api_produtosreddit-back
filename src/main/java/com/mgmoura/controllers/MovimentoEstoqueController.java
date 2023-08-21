@@ -23,55 +23,57 @@ import com.mgmoura.repositories.ProdutoRepository;
 @RestController
 @RequestMapping("api/movimentoEstoque")
 public class MovimentoEstoqueController {
-	
+
 	@Autowired
 	private MovimentoRepository movimentoRepository;
-	
+
 	@Autowired
 	private ProdutoRepository produtoRepository;
 
-	
 	@PostMapping("/post")
 	public ResponseEntity<MovimentoResponseDto> movimentoPost(@RequestBody MovimentoPostRequestDto dto) {
-		
 		MovimentoResponseDto response = new MovimentoResponseDto();
-		
+
 		try {
 			Optional<Produto> produto = produtoRepository.findById(dto.getIdProduto());
-			
-			if(produto.isEmpty()) {
+
+			if (produto.isEmpty()) {
 				
 				response.setStatus(HttpStatus.BAD_REQUEST);
 				response.setMensagem("Produto não localizado");
 				
-			}else {
-				MovimentoEstoque movimentoEstoque = new MovimentoEstoque();
+			} else {
 				
-				movimentoEstoque.setProduto(produto.get());
-				movimentoEstoque.setQuantidade(dto.getQuantidade());
-				movimentoEstoque.setTipoMovimento(dto.getTipoMovimento());
-				movimentoEstoque.setDataMovimento(new SimpleDateFormat("yyyy-MM-dd").parse(dto.getDataMovimento()));
-				
-				movimentoRepository.save(movimentoEstoque);
-				
-				response.setStatus(HttpStatus.CREATED);
-				response.setMensagem("Movimentação cadastrada com sucesso");
-				
+				if (dto.getQuantidade() <= 0) {
+					response.setStatus(HttpStatus.BAD_REQUEST);
+					response.setMensagem("Produto sem estoque para movimentação.");
+					
+				} else {
+					
+					MovimentoEstoque movimentoEstoque = new MovimentoEstoque();
+
+					movimentoEstoque.setProduto(produto.get());
+					movimentoEstoque.setQuantidade(dto.getQuantidade());
+					movimentoEstoque.setTipoMovimento(dto.getTipoMovimento());
+					movimentoEstoque.setDataMovimento(new SimpleDateFormat("yyyy-MM-dd").parse(dto.getDataMovimento()));
+
+					movimentoRepository.save(movimentoEstoque);
+
+					response.setStatus(HttpStatus.CREATED);
+					response.setMensagem("Movimentação cadastrada com sucesso");
+				}
 			}
-			
-		}catch (Exception e) {
+		} catch (Exception e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
 			response.setMensagem(e.getMessage());
 		}
-		
+
 		return ResponseEntity.status(response.getStatus().value()).body(response);
 	}
-	
+
 	@GetMapping("{dataInicio}/{dataFim}")
-	public void getAll(
-			@PathVariable("dataInicio") String dataInicio, 
-			@PathVariable("dataFim") String dataFim) {
-		
+	public void getAll(@PathVariable("dataInicio") String dataInicio, @PathVariable("dataFim") String dataFim) {
+
 	}
 
 }
