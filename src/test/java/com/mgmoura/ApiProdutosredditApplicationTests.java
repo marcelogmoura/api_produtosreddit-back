@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
+import com.mgmoura.dtos.MovimentoPostRequestDto;
 import com.mgmoura.dtos.ProdutoPostRequestDto;
 import com.mgmoura.dtos.ProdutoPutRequestDto;
 import com.mgmoura.dtos.ProdutoResponseDto;
@@ -87,7 +88,6 @@ class ApiProdutosredditApplicationTests {
 	public void testProdutoGetAll() throws Exception  {
 		
 		mockMvc.perform(get("/api/produtos/getAll")).andExpect(status().isOk());
-
 		
 	}
 
@@ -100,8 +100,31 @@ class ApiProdutosredditApplicationTests {
 		
 	}
 
-	@Test
+	
+	@Test()
 	@Order(5)
+	public void testMovimentoPost() throws Exception{
+		
+		Faker faker = new Faker();
+		
+		MovimentoPostRequestDto dto = new MovimentoPostRequestDto();
+		dto.setIdProduto(produto.getIdProduto());
+		dto.setDataMovimento("2023-08-22");
+		dto.setQuantidade(faker.number().randomDigit());
+		dto.setTipoMovimento("2");
+		
+		mockMvc.perform(post("/api/movimentoEstoque/post") 
+				.contentType("application/json") 
+				.content(mapper.writeValueAsString(dto))) 
+				.andExpect(status().isCreated());
+		
+	}
+	
+
+	
+	
+	@Test
+	@Order(6)
 	public void testProdutoDelete() throws Exception {
 		
 		testProdutoPost(); 
