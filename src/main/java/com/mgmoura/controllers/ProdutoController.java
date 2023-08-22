@@ -151,11 +151,19 @@ public class ProdutoController {
 				response.setMensagem("Produto não localizado");
 				
 			}else {
-				produtoRepository.delete(produto.get());
+				
+				if(produtoRepository.countByMovimentacao(idProduto) > 0) {
+					response.setStatus(HttpStatus.BAD_REQUEST); // 400
+					response.setMensagem("Não pode ser excluído, esse produto possui movimentação(ões) vinculada(s).");
+					
+				}else {
+					
+					produtoRepository.delete(produto.get());
 
-				response.setStatus(HttpStatus.OK);
-				response.setMensagem("Produto deletado com sucesso");
-				response.setProduto(produto.get());
+					response.setStatus(HttpStatus.OK);
+					response.setMensagem("Produto deletado com sucesso");
+					response.setProduto(produto.get());
+				}
 				
 			}
 			

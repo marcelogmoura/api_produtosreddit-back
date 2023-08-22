@@ -117,11 +117,7 @@ class ApiProdutosredditApplicationTests {
 				.contentType("application/json") 
 				.content(mapper.writeValueAsString(dto))) 
 				.andExpect(status().isCreated());
-		
 	}
-	
-
-	
 	
 	@Test
 	@Order(6)
@@ -131,7 +127,6 @@ class ApiProdutosredditApplicationTests {
 		
 		mockMvc.perform(delete("/api/produtos/" + produto.getIdProduto())) 
 		.andExpect(status().isOk());
-
 	}
 
 }
